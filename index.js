@@ -3,14 +3,30 @@ let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
-// Initialize the Google Cloud Storage client with the service account key
-const storage = new Storage({
-  keyFilename: 'C:\Users\rdhak\TestFolder\flawless-snow-415416-28b42ecb7461.json',
-});
+const { Storage } = require('@google-cloud/storage');
+
+// Specify the path to your service account key JSON file
+const keyFilePath = 'C:/Users/rdhak/TestFolder/flawless-snow-415416-28b42ecb7461.json';
 
 // Specify the bucket name and file path
 const bucketName = 'pgp-csv-bucket';
 const fileName = 'FloridaHikes.csv';
+
+// Initialize the Google Cloud Storage client with the service account key
+const storage = new Storage({
+  keyFilename: keyFilePath,
+});
+
+// Now you can use the 'storage' object to interact with Google Cloud Storage
+// For example, to download a file
+storage.bucket(bucketName).file(fileName).download({ destination: 'local-file.csv' }, (err) => {
+  if (err) {
+    console.error('Error downloading file:', err);
+  } else {
+    console.log('File downloaded successfully!');
+  }
+});
+
 
 // Function to fetch and process the CSV file
 async function fetchAndProcessCSV() {
