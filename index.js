@@ -1,10 +1,76 @@
-let markerCluster; // Declare the variable outside of the async function
+let markerCluster;
 let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
+// Initialize the Google Cloud Storage client with the service account key
+const storage = new Storage({
+  keyFilename: 'path/to/your/service-account-key.json',
+});
+
+// Specify the bucket name and file path
+const bucketName = 'your-bucket-name';
+const fileName = 'pgp-csv-bucket/FloridaHikes.csv';
+
+// Function to fetch and process the CSV file
+async function fetchAndProcessCSV() {
+  try {
+    // Create a read stream for the CSV file
+    const readStream = storage.bucket(bucketName).file(fileName).createReadStream();
+
+    // Buffer to store CSV data
+    let csvData = '';
+
+    // Event handlers for stream events
+    readStream
+      .on('error', (err) => {
+        console.error('Error reading file:', err);
+      })
+      .on('data', (chunk) => {
+        // Append each chunk of data to the buffer
+        csvData += chunk.toString();
+      })
+      .on('end', () => {
+        // Process the complete CSV data using your parsing function
+        trails = parseCSV(csvData);
+
+        // Filter out entries with undefined positions
+        const validTrails = trails.filter((trail) => trail.position);
+
+        // Now you can use the 'validTrails' array to create markers or perform other operations
+        initMap();
+      });
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Your existing parsing function
+function parseCSV(csv) {
+  // Replace this with your actual CSV parsing logic
+  // This is your provided parsing function
+  const rows = csv.split('\n');
+  const header = rows[0].split(',');
+
+  return rows.slice(1).map((row) => {
+    const values = row.split(',');
+    const obj = {};
+
+    for (let i = 0; i < header.length; i++) {
+      const headerKey = header[i].trim(); // Trim extra spaces
+      obj[headerKey] = (headerKey === 'lat' || headerKey === 'lng')
+        ? parseFloat(values[i])
+        : values[i];
+    }
+
+    return obj;
+  });
+}
+
+// Function to initialize the map
 async function initMap() {
-  // Request needed libraries.
+  // Your existing map initialization code here
+    // Request needed libraries.
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
@@ -41,21 +107,22 @@ infoWindow = new google.maps.InfoWindow();
 // console.log("Trails array:", trails);
 
 
-
-// Create an array to hold standard Google Maps markers
-const markerElements = [];
-const markers = trails.map((trail) => {
-  const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
+  // Create an array to hold standard Google Maps markers
+  const markerElements = [];
+  const markers = trails.map((trail) => {
+    // Your existing marker creation logic here
+   const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
 const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1);
 // const svgData = await getFontAwesomeSvgData();
-  const marker = new google.maps.Marker({
-    position: trail.position,
-    map: map,
-    title: trail.description,
-    icon: {
 
 
-// url: `data:image/svg+xml;base64,${btoa(svgData)}`,
+    const marker = new google.maps.Marker({
+      position: trail.position,
+      map: map,
+      title: trail.description,
+      icon: {
+        // Your existing icon configuration here
+        // url: `data:image/svg+xml;base64,${btoa(svgData)}`,
            // scaledSize: new google.maps.Size(30, 30),
   url: 'https://i.imgur.com/w7drtat.png',
        // url: 'paws.png',
@@ -67,128 +134,42 @@ const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1
 
 
 anchor: iconAnchor, // Set the anchor point
-    },
-    optimized: true, // Disable marker optimization
-    zIndex: 1, // Ensure markers are above other elements
 
-  });
-
- google.maps.event.addListener(marker, "click", () => {
-            if (!isMarkerClicked) {
-                toggleHighlight(marker, trail);
-                infoWindow.setContent(buildContent(trail));
-                infoWindow.open(map, marker);
-            }
-        });
-
-  markerElements.push(marker);
-
-  return marker;
-});
-
-/*
-async function getFontAwesomeSvgData() {
-    const response = await fetch('https://api.fontawesome.com/v5/svg/icons/map-pin-solid.svg');
-    const svgData = await response.text();
-    return svgData;
-}
-*/
-
-// Enable marker clustering with MarkerClusterer
-markerCluster = new MarkerClusterer(map, markerElements, {
-  gridSize: 25, // Adjust the gridSize based on your preference
-  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-  minimumClusterSize: 2, // Set the minimum number of markers to form a cluster
-zoomOnClick: true,
-
-});
-
-
-google.maps.event.addListener(map, 'click', () => {
-        isMarkerClicked = false;
-        infoWindow.close();
+      },
+      optimized: true,
+      zIndex: 1,
     });
 
-    google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
-        isMarkerClicked = true;
-    });
-
-
-
-}
-
-
-
-async function fetchData() {
-  try {
-   // const response = await fetch('FloridaHikes.csv');
-//   const data = await response.text();
-
-
-    const url = `https://storage.cloud.google.com/pgp-csv-bucket/FloridaHikes.csv`;
-  const response = await fetch(url);
-     const data = await response.text();
-
-    // Parse CSV data (use a library or implement your own parser)
-    const parsedData = parseCSV(data);
-
-    // Create trails array dynamically with default values for missing or invalid entries
-    const trails = parsedData.map((trail) => {
-      const defaultTrail = {
-        address: '',
-        description: 'Unknown',
-        type: 'Unknown',
-        length: 0,
-        difficulty: 0,
-        time: 0,
-        position: undefined, // Set position to undefined initially
-      };
-
-      // Check if lat and lng exist and are valid
-      if (trail.lat && trail.lng) {
-        defaultTrail.position = {
-          lat: parseFloat(trail.lat),
-          lng: parseFloat(trail.lng),
-        };
+    google.maps.event.addListener(marker, "click", () => {
+      if (!isMarkerClicked) {
+        toggleHighlight(marker, trail);
+        infoWindow.setContent(buildContent(trail));
+        infoWindow.open(map, marker);
       }
-
-      return { ...defaultTrail, ...trail };
     });
 
-    // Filter out entries with undefined positions
-    const validTrails = trails.filter((trail) => trail.position);
+    markerElements.push(marker);
 
-    return validTrails;
-  } catch (error) {
-    console.error('Error fetching or parsing data:', error);
-    return [];
-  }
-}
+    return marker;
+  });
 
+  // Enable marker clustering with MarkerClusterer
+  markerCluster = new MarkerClusterer(map, markerElements, {
+    gridSize: 25,
+    imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+    minimumClusterSize: 2,
+    zoomOnClick: true,
+  });
 
-function parseCSV(csv) {
-  // Implement your CSV parsing logic here
-  // This is a simple example, adjust based on your CSV structure
-  const rows = csv.split('\n');
-  const header = rows[0].split(',');
+  google.maps.event.addListener(map, 'click', () => {
+    isMarkerClicked = false;
+    infoWindow.close();
+  });
 
-  return rows.slice(1).map((row) => {
-    const values = row.split(',');
-    const obj = {};
-
-    for (let i = 0; i < header.length; i++) {
-      const headerKey = header[i].trim(); // Trim extra spaces
-    obj[headerKey] = (headerKey === 'lat' || headerKey === 'lng')
-      ? parseFloat(values[i])
-      : values[i];
-  }
-
-    return obj;
+  google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
+    isMarkerClicked = true;
   });
 }
-
-
-
 
 
 
@@ -206,10 +187,6 @@ function toggleHighlight(marker, trail) {
         console.error('Invalid marker:', marker);
     }
 }
-
-
-
-
 
 
 
@@ -251,48 +228,5 @@ function buildContent(trail) {
 
 
 
-
-
-
-
-
-/*
-function buildContent(trail) {
-
-console.log("Build content called:", trail);
-  const content = document.createElement("div");
-
-  content.classList.add("trail");
-  content.innerHTML = `
-    <div class="icon">
-        <i aria-hidden="true" class="fa fa-icon fa-${trail.type}" title="${trail.type}"></i>
-        <span class="fa-sr-only">${trail.type}</span>
-    </div>
-    <div class="details">
-        <div class="description">${trail.description}</div>
-        <div class="address">${trail.address}</div>
-        <div class="features">
-        <div>
-            <i aria-hidden="true" class="fa fa-ruler fa-lg ruler" title="length"></i>
-            <span class="fa-sr-only">length</span>
-            <span>${trail.length} mile</span></span>
-        </div>
-        <div>
-            <i aria-hidden="true" class="fa fa-stairs fa-lg stairs" title="difficulty"></i>
-            <span class="fa-sr-only">difficulty</span>
-            <span>${trail.difficulty}</span>
-        </div>
-        <div>
-            <i aria-hidden="true" class="fa fa-clock fa-lg clock" title="time"></i>
-            <span class="fa-sr-only">time</span>
-            <span>${trail.time} hour</sup></span>
-        </div>
-        </div>
-    </div>
-    `;
-  return content;
-}
-
-*/
-
-initMap();
+// Call the function to fetch and process the CSV file
+fetchAndProcessCSV();
