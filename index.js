@@ -5,12 +5,12 @@ let isMarkerClicked = false;
 
 // Initialize the Google Cloud Storage client with the service account key
 const storage = new Storage({
-  keyFilename: 'path/to/your/service-account-key.json',
+  keyFilename: 'C:\Users\rdhak\TestFolder\flawless-snow-415416-28b42ecb7461.json',
 });
 
 // Specify the bucket name and file path
-const bucketName = 'your-bucket-name';
-const fileName = 'pgp-csv-bucket/FloridaHikes.csv';
+const bucketName = 'pgp-csv-bucket';
+const fileName = 'FloridaHikes.csv';
 
 // Function to fetch and process the CSV file
 async function fetchAndProcessCSV() {
