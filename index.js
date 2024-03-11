@@ -1,10 +1,11 @@
-let markerCluster; // Declare the variable outside of the async function
+// Declare the variable outside of the async function
+let markerCluster;
 let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
-// Wait for the document to be fully loaded
-document.addEventListener('DOMContentLoaded', async function () {
+// Define the initMap function
+async function initMap() {
   // Request needed libraries.
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -59,7 +60,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (typeof MarkerClusterer !== 'undefined') {
     markerCluster = new MarkerClusterer(map, markerElements, {
       gridSize: 25,
-      
       minimumClusterSize: 2,
       zoomOnClick: true,
     });
@@ -76,14 +76,18 @@ document.addEventListener('DOMContentLoaded', async function () {
   google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
     isMarkerClicked = true;
   });
-});
+}
 
+// Wait for the document to be fully loaded
+document.addEventListener('DOMContentLoaded', function () {
+  initMap();
+});
 
 async function fetchData() {
   try {
     // Replace 'your-cloud-function-url' with the actual Cloud Function URL
-   const cloudFunctionURL = 'https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl';
-const response = await fetch(cloudFunctionURL);
+    const cloudFunctionURL = 'https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl';
+    const response = await fetch(cloudFunctionURL);
 
     const data = await response.text();
 
@@ -186,5 +190,3 @@ function buildContent(trail) {
 
   return infoWindowContent;
 }
-
-initMap();
