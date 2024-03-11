@@ -1,77 +1,37 @@
-let markerCluster;
+let markerCluster; // Declare the variable outside of the async function
 let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
-// Function to fetch and process the CSV file
-async function fetchAndProcessCSV() {
-  try {
-    // Fetch data from the server-side API endpoint
-    const response = await fetch('http://localhost:3000/download');
-    const csvData = await response.text();
-
-    // Process the complete CSV data using your parsing function
-    trails = parseCSV(csvData);
-
-    // Filter out entries with undefined positions
-    const validTrails = trails.filter((trail) => trail.position);
-
-    // Initialize the map with valid trails
-    initMap(validTrails);
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-
-// Your existing parsing function
-function parseCSV(csv) {
-  // Replace this with your actual CSV parsing logic
-  // This is your provided parsing function
-  const rows = csv.split('\n');
-  const header = rows[0].split(',');
-
-  return rows.slice(1).map((row) => {
-    const values = row.split(',');
-    const obj = {};
-
-    for (let i = 0; i < header.length; i++) {
-      const headerKey = header[i].trim(); // Trim extra spaces
-      obj[headerKey] = (headerKey === 'lat' || headerKey === 'lng')
-        ? parseFloat(values[i])
-        : values[i];
-    }
-
-    return obj;
-  });
-}
-
-// Function to initialize the map
-async function initMap(trails) {
-  // Your existing map initialization code here
-  const { Map } = await google.maps.importLibrary('maps');
-  const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
+async function initMap() {
+  // Request needed libraries.
+  const { Map } = await google.maps.importLibrary("maps");
+  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
-  const map = new Map(document.getElementById('map'), {
+  const map = new Map(document.getElementById("map"), {
     zoom: 7,
     center,
-    mapId: '938d538613c03fe6',
+    mapId: "938d538613c03fe6",
   });
 
   infoWindow = new google.maps.InfoWindow();
 
+  // Fetch data from CSV and create trails array
+  // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
+  if (!trails) {
+    trails = await fetchData();
+  }
+
   // Create an array to hold standard Google Maps markers
   const markerElements = [];
   const markers = trails.map((trail) => {
-    // Your existing marker creation logic here
     const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
     const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1);
-
     const marker = new google.maps.Marker({
       position: trail.position,
       map: map,
       title: trail.description,
       icon: {
-        // Your existing icon configuration here
         url: 'https://i.imgur.com/w7drtat.png',
         scaledSize: iconSize,
         anchor: iconAnchor,
@@ -80,9 +40,9 @@ async function initMap(trails) {
       zIndex: 1,
     });
 
-    google.maps.event.addListener(marker, 'click', () => {
+    google.maps.event.addListener(marker, "click", () => {
       if (!isMarkerClicked) {
-        toggleHighlight(map, marker, trail);
+        toggleHighlight(marker, trail);
         infoWindow.setContent(buildContent(trail));
         infoWindow.open(map, marker);
       }
@@ -111,8 +71,71 @@ async function initMap(trails) {
   });
 }
 
-// Function to toggle marker highlight
-function toggleHighlight(map, marker, trail) {
+async function fetchData() {
+  try {
+    // Replace 'your-cloud-function-url' with the actual Cloud Function URL
+    const url = 'https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl';
+    const response = await fetch(url);
+    const data = await response.text();
+
+    // Parse CSV data (use a library or implement your own parser)
+    const parsedData = parseCSV(data);
+
+    // Create trails array dynamically with default values for missing or invalid entries
+    const trails = parsedData.map((trail) => {
+      const defaultTrail = {
+        address: '',
+        description: 'Unknown',
+        type: 'Unknown',
+        length: 0,
+        difficulty: 0,
+        time: 0,
+        position: undefined, // Set position to undefined initially
+      };
+
+      // Check if lat and lng exist and are valid
+      if (trail.lat && trail.lng) {
+        defaultTrail.position = {
+          lat: parseFloat(trail.lat),
+          lng: parseFloat(trail.lng),
+        };
+      }
+
+      return { ...defaultTrail, ...trail };
+    });
+
+    // Filter out entries with undefined positions
+    const validTrails = trails.filter((trail) => trail.position);
+
+    return validTrails;
+  } catch (error) {
+    console.error('Error fetching or parsing data:', error);
+    return [];
+  }
+}
+
+function parseCSV(csv) {
+  // Implement your CSV parsing logic here
+  // This is a simple example, adjust based on your CSV structure
+  const rows = csv.split('\n');
+  const header = rows[0].split(',');
+
+  return rows.slice(1).map((row) => {
+    const values = row.split(',');
+    const obj = {};
+
+    for (let i = 0; i < header.length; i++) {
+      const headerKey = header[i].trim(); // Trim extra spaces
+      obj[headerKey] = (headerKey === 'lat' || headerKey === 'lng')
+        ? parseFloat(values[i])
+        : values[i];
+    }
+
+    return obj;
+  });
+}
+
+function toggleHighlight(marker, trail) {
   if (marker) {
     infoWindow.setContent(buildContent(trail));
     infoWindow.open(map, marker);
@@ -121,7 +144,6 @@ function toggleHighlight(map, marker, trail) {
   }
 }
 
-// Function to build content for info window
 function buildContent(trail) {
   const infoWindowContent = `
     <div class="info-window-content">
@@ -156,5 +178,4 @@ function buildContent(trail) {
   return infoWindowContent;
 }
 
-// Call the function to fetch and process the CSV file
-fetchAndProcessCSV();
+initMap();
