@@ -74,8 +74,9 @@ async function initMap() {
 async function fetchData() {
   try {
     // Replace 'your-cloud-function-url' with the actual Cloud Function URL
-    const url = 'https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl';
-    const response = await fetch(url);
+   const cloudFunctionURL = 'https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl';
+const response = await fetch(cloudFunctionURL);
+
     const data = await response.text();
 
     // Parse CSV data (use a library or implement your own parser)
