@@ -82,7 +82,7 @@ async function initMap(trails) {
 
     google.maps.event.addListener(marker, 'click', () => {
       if (!isMarkerClicked) {
-        toggleHighlight(marker, trail);
+        toggleHighlight(map, marker, trail);
         infoWindow.setContent(buildContent(trail));
         infoWindow.open(map, marker);
       }
