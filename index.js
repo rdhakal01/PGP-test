@@ -3,10 +3,12 @@ let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
-async function initMap() {
+// Wait for the document to be fully loaded
+document.addEventListener('DOMContentLoaded', async function () {
   // Request needed libraries.
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
   const map = new Map(document.getElementById("map"), {
     zoom: 7,
@@ -54,12 +56,17 @@ async function initMap() {
   });
 
   // Enable marker clustering with MarkerClusterer
-  markerCluster = new MarkerClusterer(map, markerElements, {
-    gridSize: 25,
-    imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-    minimumClusterSize: 2,
-    zoomOnClick: true,
-  });
+  if (typeof MarkerClusterer !== 'undefined') {
+    markerCluster = new MarkerClusterer(map, markerElements, {
+      gridSize: 25,
+      
+      minimumClusterSize: 2,
+      zoomOnClick: true,
+    });
+  } else {
+    // Handle the case when MarkerClusterer is not defined
+    console.error('MarkerClusterer is not loaded.');
+  }
 
   google.maps.event.addListener(map, 'click', () => {
     isMarkerClicked = false;
@@ -69,7 +76,8 @@ async function initMap() {
   google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
     isMarkerClicked = true;
   });
-}
+});
+
 
 async function fetchData() {
   try {
