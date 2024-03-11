@@ -112,7 +112,7 @@ async function initMap(trails) {
 }
 
 // Function to toggle marker highlight
-function toggleHighlight(marker, trail) {
+function toggleHighlight(map, marker, trail) {
   if (marker) {
     infoWindow.setContent(buildContent(trail));
     infoWindow.open(map, marker);
