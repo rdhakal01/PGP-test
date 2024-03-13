@@ -21,11 +21,8 @@ async function initMap() {
 
     infoWindow = new google.maps.InfoWindow();
 
-    // Fetch data from CSV and create trails array
-    // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
-    if (!trails) {
-      trails = await fetchData();
-    }
+    // Fetch data from Cloud Function and create trails array
+    trails = await fetchData();
 
     // Create an array to hold standard Google Maps markers
     const markerElements = [];
@@ -91,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
 async function fetchData() {
   try {
     // Replace 'your-cloud-function-url' with the actual Cloud Function URL
-    const cloudFunctionURL = 'https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl';
+    const cloudFunctionURL = 'https://us-east1-flawless-snow-415416.cloudfunctions.net/fetchCSVData';
     const response = await fetch(cloudFunctionURL);
 
     const data = await response.text();
