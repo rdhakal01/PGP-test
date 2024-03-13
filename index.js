@@ -3,79 +3,84 @@ let markerCluster;
 let infoWindow;
 let trails;
 let isMarkerClicked = false;
+let map; // Declare map globally
 
 // Define the initMap function
 async function initMap() {
   // Request needed libraries.
-  const { Map } = await google.maps.importLibrary("maps");
-  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+  try {
+    const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
-  const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
-  const map = new Map(document.getElementById("map"), {
-    zoom: 7,
-    center,
-    mapId: "938d538613c03fe6",
-  });
+    const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
+    map = new Map(document.getElementById("map"), {
+      zoom: 7,
+      center,
+      mapId: "938d538613c03fe6",
+    });
 
-  infoWindow = new google.maps.InfoWindow();
+    infoWindow = new google.maps.InfoWindow();
 
-  // Fetch data from CSV and create trails array
-  // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
-  if (!trails) {
-    trails = await fetchData();
+    // Fetch data from CSV and create trails array
+    // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
+    if (!trails) {
+      trails = await fetchData();
+    }
+
+    // Create an array to hold standard Google Maps markers
+    const markerElements = [];
+    const markers = trails.map((trail) => {
+      const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
+      const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1);
+      const marker = new google.maps.Marker({
+        position: trail.position,
+        map: map,
+        title: trail.description,
+        icon: {
+          url: 'https://i.imgur.com/w7drtat.png',
+          scaledSize: iconSize,
+          anchor: iconAnchor,
+        },
+        optimized: true,
+        zIndex: 1,
+      });
+
+      google.maps.event.addListener(marker, "click", () => {
+        if (!isMarkerClicked) {
+          toggleHighlight(marker, trail);
+          infoWindow.setContent(buildContent(trail));
+          infoWindow.open(map, marker);
+        }
+      });
+
+      markerElements.push(marker);
+
+      return marker;
+    });
+
+    // Enable marker clustering with MarkerClusterer
+    if (typeof MarkerClusterer !== 'undefined') {
+      markerCluster = new MarkerClusterer(map, markerElements, {
+        gridSize: 25,
+        minimumClusterSize: 2,
+        zoomOnClick: true,
+      });
+    } else {
+      // Handle the case when MarkerClusterer is not defined
+      console.error('MarkerClusterer is not loaded.');
+    }
+
+    google.maps.event.addListener(map, 'click', () => {
+      isMarkerClicked = false;
+      infoWindow.close();
+    });
+
+    google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
+      isMarkerClicked = true;
+    });
+  } catch (error) {
+    console.error('Error initializing map:', error);
   }
-
-  // Create an array to hold standard Google Maps markers
-  const markerElements = [];
-  const markers = trails.map((trail) => {
-    const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
-    const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1);
-    const marker = new google.maps.Marker({
-      position: trail.position,
-      map: map,
-      title: trail.description,
-      icon: {
-        url: 'https://i.imgur.com/w7drtat.png',
-        scaledSize: iconSize,
-        anchor: iconAnchor,
-      },
-      optimized: true,
-      zIndex: 1,
-    });
-
-    google.maps.event.addListener(marker, "click", () => {
-      if (!isMarkerClicked) {
-        toggleHighlight(marker, trail);
-        infoWindow.setContent(buildContent(trail));
-        infoWindow.open(map, marker);
-      }
-    });
-
-    markerElements.push(marker);
-
-    return marker;
-  });
-
-  // Enable marker clustering with MarkerClusterer
-  if (typeof MarkerClusterer !== 'undefined') {
-    markerCluster = new MarkerClusterer(map, markerElements, {
-      gridSize: 25,
-      minimumClusterSize: 2,
-      zoomOnClick: true,
-    });
-  } else {
-    // Handle the case when MarkerClusterer is not defined
-    console.error('MarkerClusterer is not loaded.');
-  }
-
-  google.maps.event.addListener(map, 'click', () => {
-    isMarkerClicked = false;
-    infoWindow.close();
-  });
-
-  google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
-    isMarkerClicked = true;
-  });
 }
 
 // Wait for the document to be fully loaded
