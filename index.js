@@ -118,6 +118,7 @@ async function loadFirebase() {
     }
   } catch (error) {
     console.error('Error loading Firebase:', error);
+     throw error; // Re-throw the error to be caught by the caller
   }
 }
 
