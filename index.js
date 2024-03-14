@@ -19,12 +19,6 @@ firebase.initializeApp(firebaseConfig);
 
 
 
-// Initialize Firebase
-firebase.initializeApp({
-  apiKey: 'AIzaSyChyqcSoMcKalR3I3hcvhL1GCQfz8QT0ys',
-  authDomain: 'flawless-snow-415416.firebaseapp.com',
-  projectId: 'flawless-snow-415416'
-});
 
 // Define the initMap function
 async function initMap() {
