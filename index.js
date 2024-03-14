@@ -6,6 +6,20 @@ let isMarkerClicked = false;
 let map; // Declare map globally
 
 // Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyChyqcSoMcKalR3I3hcvhL1GCQfz8QT0ys",
+  authDomain: "flawless-snow-415416.firebaseapp.com",
+  projectId: "flawless-snow-415416",
+  storageBucket: "pgp-csv-bucket",
+  
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+
+
+// Initialize Firebase
 firebase.initializeApp({
   apiKey: 'AIzaSyChyqcSoMcKalR3I3hcvhL1GCQfz8QT0ys',
   authDomain: 'flawless-snow-415416.firebaseapp.com',
