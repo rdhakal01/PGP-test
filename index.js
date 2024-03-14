@@ -5,6 +5,13 @@ let trails;
 let isMarkerClicked = false;
 let map; // Declare map globally
 
+// Initialize Firebase
+firebase.initializeApp({
+  apiKey: 'AIzaSyChyqcSoMcKalR3I3hcvhL1GCQfz8QT0ys',
+  authDomain: 'flawless-snow-415416.firebaseapp.com',
+  projectId: 'flawless-snow-415416'
+});
+
 // Define the initMap function
 async function initMap() {
   // Request needed libraries.
@@ -87,9 +94,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
 async function fetchData() {
   try {
+    // Get the current user
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Get the JWT token
+    const token = await user.getIdToken();
+
     // Replace 'your-cloud-function-url' with the actual Cloud Function URL
     const cloudFunctionURL = 'https://us-east1-flawless-snow-415416.cloudfunctions.net/fetchCSVData';
-    const response = await fetch(cloudFunctionURL);
+    const response = await fetch(cloudFunctionURL, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
     const data = await response.text();
 
