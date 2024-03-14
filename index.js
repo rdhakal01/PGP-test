@@ -14,16 +14,17 @@ const firebaseConfig = {
   
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-
-
-
 
 // Define the initMap function
 async function initMap() {
   // Request needed libraries.
   try {
+     // Dynamically load Firebase
+    await loadFirebase();
+
+    // Initialize Firebase with your config
+    firebase.initializeApp(firebaseConfig);
+    
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
@@ -99,6 +100,26 @@ async function initMap() {
 document.addEventListener('DOMContentLoaded', function () {
   initMap();
 });
+
+
+// Function to dynamically load Firebase
+async function loadFirebase() {
+  try {
+    // Check if firebase global variable is already defined
+    if (typeof firebase === 'undefined') {
+      const firebaseScript = document.createElement('script');
+      firebaseScript.src = 'https://www.gstatic.com/firebasejs/9.6.3/firebase-app.js';
+      document.head.appendChild(firebaseScript);
+
+      await new Promise((resolve, reject) => {
+        firebaseScript.onload = resolve;
+        firebaseScript.onerror = reject;
+      });
+    }
+  } catch (error) {
+    console.error('Error loading Firebase:', error);
+  }
+}
 
 async function fetchData() {
   try {
