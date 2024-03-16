@@ -5,26 +5,12 @@ let trails;
 let isMarkerClicked = false;
 let map; // Declare map globally
 
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyChyqcSoMcKalR3I3hcvhL1GCQfz8QT0ys",
-  authDomain: "flawless-snow-415416.firebaseapp.com",
-  projectId: "flawless-snow-415416",
-  storageBucket: "pgp-csv-bucket",
-  
-};
-
 
 // Define the initMap function
 async function initMap() {
   // Request needed libraries.
   try {
-     // Dynamically load Firebase
-    await loadFirebase();
-
-    // Initialize Firebase with your config
-    firebase.initializeApp(firebaseConfig);
-    
+        
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
@@ -101,26 +87,6 @@ document.addEventListener('DOMContentLoaded', function () {
   initMap();
 });
 
-
-// Function to dynamically load Firebase
-async function loadFirebase() {
-  try {
-    // Check if firebase global variable is already defined
-    if (typeof firebase === 'undefined') {
-      const firebaseScript = document.createElement('script');
-      firebaseScript.src = 'https://www.gstatic.com/firebasejs/9.6.3/firebase-app.js';
-      document.head.appendChild(firebaseScript);
-
-      await new Promise((resolve, reject) => {
-        firebaseScript.onload = resolve;
-        firebaseScript.onerror = reject;
-      });
-    }
-  } catch (error) {
-    console.error('Error loading Firebase:', error);
-     throw error; // Re-throw the error to be caught by the caller
-  }
-}
 
 async function fetchData() {
   try {
