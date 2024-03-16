@@ -1,9 +1,31 @@
+// Import the required module
+const { Storage } = require('@google-cloud/storage');
+
+// Replace with your project ID and bucket name
+const projectId = 'your-project-id';
+const bucketName = 'pgp-csv-bucket';
+const fileName = 'FloridaHikes.csv'; // Replace with your CSV file name
+
+// Set up service account credentials
+const credentials = {
+  // Your service account credentials object
+};
+
+// Create a new Storage instance
+const storage = new Storage({
+  projectId,
+  credentials,
+});
+
+
+
 let markerCluster; // Declare the variable outside of the async function
 let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
 async function initMap() {
+  try {
   // Request needed libraries.
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -97,7 +119,7 @@ async function getFontAwesomeSvgData() {
 // Enable marker clustering with MarkerClusterer
 markerCluster = new MarkerClusterer(map, markerElements, {
   gridSize: 25, // Adjust the gridSize based on your preference
-  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+//  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
   minimumClusterSize: 2, // Set the minimum number of markers to form a cluster
 zoomOnClick: true,
 
@@ -113,7 +135,9 @@ google.maps.event.addListener(map, 'click', () => {
         isMarkerClicked = true;
     });
 
-
+ } catch (error) {
+    console.error('Error initializing map:', error);
+  }
 
 }
 
@@ -121,18 +145,11 @@ google.maps.event.addListener(map, 'click', () => {
 
 async function fetchData() {
   try {
-// const csvUrl = 'https://drive.google.com/uc?export=download&id=1Evj-TsTB6w9WQEocbmIXtlQ1-uwk6OoL';
-//const response = await fetch(csvUrl);
-    const response = await fetch('FloridaHikes.csv');
-   const data = await response.text();
+    const [file] = await storage.bucket(bucketName).file(fileName).download();
+    const csvData = await file.toString();
 
-// const token = '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';  // Replace with your actual personal access token
-   // const url = `https://raw.githubusercontent.com/rdhakal01/PGP-CSV/main/FloridaHikes.csv?token=${token}`;
- // const response = await fetch(url);
-    // const data = await response.text();
-
-    // Parse CSV data (use a library or implement your own parser)
-    const parsedData = parseCSV(data);
+    // Parse CSV data
+    const parsedData = parseCSV(csvData);
 
     // Create trails array dynamically with default values for missing or invalid entries
     const trails = parsedData.map((trail) => {
@@ -167,7 +184,6 @@ async function fetchData() {
   }
 }
 
-
 function parseCSV(csv) {
   // Implement your CSV parsing logic here
   // This is a simple example, adjust based on your CSV structure
@@ -180,10 +196,10 @@ function parseCSV(csv) {
 
     for (let i = 0; i < header.length; i++) {
       const headerKey = header[i].trim(); // Trim extra spaces
-    obj[headerKey] = (headerKey === 'lat' || headerKey === 'lng')
-      ? parseFloat(values[i])
-      : values[i];
-  }
+      obj[headerKey] = (headerKey === 'lat' || headerKey === 'lng')
+        ? parseFloat(values[i])
+        : values[i];
+    }
 
     return obj;
   });
