@@ -1,3 +1,4 @@
+/*
 // Import the required module
 const { Storage } = require('@google-cloud/storage');
 
@@ -16,7 +17,7 @@ const storage = new Storage({
   projectId,
   credentials,
 });
-
+*/
 
 
 let markerCluster; // Declare the variable outside of the async function
@@ -54,7 +55,8 @@ infoWindow = new google.maps.InfoWindow();
 // Fetch data from CSV and create trails array
  // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
   if (!trails) {
-    trails = await fetchData();
+   // trails = await fetchData();
+   const trails = await fetchDataFromCloudFunction();
   }
  
 
@@ -142,15 +144,29 @@ google.maps.event.addListener(map, 'click', () => {
 }
 
 
+// Function to fetch data from the Cloud Function
+async function fetchDataFromCloudFunction() {
+  try {
+    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/accessStorage');
+    const data = await response.json(); // assuming Cloud Function returns JSON data
+    return data;
+  } catch (error) {
+    console.error('Error fetching data from Cloud Function:', error);
+    return [];
+  }
+}
 
+
+
+/*
 async function fetchData() {
   try {
-    const [file] = await storage.bucket(bucketName).file(fileName).download();
-    const csvData = await file.toString();
-
-    // Parse CSV data
-    const parsedData = parseCSV(csvData);
-
+    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/accessStorage');
+    const data = await response.json(); // assuming Cloud Function returns JSON data
+    
+    // Parse the fetched JSON data
+    const parsedData = parseJSON(data);
+    
     // Create trails array dynamically with default values for missing or invalid entries
     const trails = parsedData.map((trail) => {
       const defaultTrail = {
@@ -183,6 +199,7 @@ async function fetchData() {
     return [];
   }
 }
+*/
 
 function parseCSV(csv) {
   // Implement your CSV parsing logic here
