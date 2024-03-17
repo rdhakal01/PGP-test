@@ -53,11 +53,15 @@ infoWindow = new google.maps.InfoWindow();
 
 
 // Fetch data from CSV and create trails array
- // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
-  if (!trails) {
-   // trails = await fetchData();
-   const trails = await fetchDataFromCloudFunction();
-  }
+// Ensure that the global 'trails' variable is already populated by calling 'fetchData'
+if (!trails) {
+    try {
+        trails = await fetchDataFromCloudFunction();
+    } catch (error) {
+        console.error('Error fetching data from Cloud Function:', error);
+        return;
+    }
+}
  
 
 // console.log('Trails Data:', trails);
