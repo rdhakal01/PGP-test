@@ -1,29 +1,43 @@
-/*
-// Import the required module
-const { Storage } = require('@google-cloud/storage');
-
-// Replace with your project ID and bucket name
-const projectId = 'flawless-snow-415416';
-const bucketName = 'pgp-csv-bucket';
-const fileName = 'FloridaHikes.csv'; // Replace with your CSV file name
-
-// Set up service account credentials
-const credentials = {
-  // Your service account credentials object
-};
-
-// Create a new Storage instance
-const storage = new Storage({
-  projectId,
-  credentials,
-});
-*/
-
 
 let markerCluster; // Declare the variable outside of the async function
 let infoWindow;
 let trails;
 let isMarkerClicked = false;
+
+
+// Import the required module
+const { Storage } = require('@google-cloud/storage');
+
+// Set up service account credentials from environment variable
+const credentials = process.env.authVariable; // Assuming 'authVariable' contains the JSON credentials
+
+// Create a new Storage instance with credentials
+const storage = new Storage({
+  credentials: JSON.parse(credentials),
+});
+
+
+// Function to fetch data from Google Cloud Storage
+async function fetchDataFromStorage() {
+  try {
+    // Replace 'bucketName' and 'fileName' with your actual bucket name and CSV file name
+    const bucketName = 'pgp-csv-bucket';
+    const fileName = 'FloridaHikes.csv';
+
+    // Get the CSV file from Google Cloud Storage
+    const [file] = await storage.bucket(bucketName).file(fileName).download();
+
+    // Parse the CSV data
+    const csvData = file.toString(); // Assuming CSV data is stored as a string
+    // Implement CSV parsing logic here if needed
+
+    // Return the parsed data
+    return csvData;
+  } catch (error) {
+    console.error('Error fetching data from Google Cloud Storage:', error);
+    return [];
+  }
+}
 
 async function initMap() {
   try {
@@ -35,8 +49,6 @@ async function initMap() {
     zoom: 7,
     center,
     mapId: "938d538613c03fe6",
-
-
   });
 
 /*
@@ -50,18 +62,20 @@ async function initMap() {
 
 infoWindow = new google.maps.InfoWindow();
 
+// Fetch data from Google Cloud Storage
+const csvData = await fetchDataFromStorage();
 
+// Parse the fetched CSV data
+const trailsFromCSV = parseCSV(csvData);
 
-// Fetch data from CSV and create trails array
 // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
 if (!trails) {
-    try {
-        trails = await fetchDataFromCloudFunction();
-    } catch (error) {
-        console.error('Error fetching data from Cloud Function:', error);
-        return;
-    }
+    trails = trailsFromCSV;
+} else {
+    // Merge data from CSV with existing trails
+    trails = trails.concat(trailsFromCSV);
 }
+
  
 
 // console.log('Trails Data:', trails);
@@ -145,19 +159,6 @@ google.maps.event.addListener(map, 'click', () => {
     console.error('Error initializing map:', error);
   }
 
-}
-
-
-// Function to fetch data from the Cloud Function
-async function fetchDataFromCloudFunction() {
-  try {
-    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/accessStorage');
-    const data = await response.json(); // assuming Cloud Function returns JSON data
-    return data;
-  } catch (error) {
-    console.error('Error fetching data from Cloud Function:', error);
-    return [];
-  }
 }
 
 
