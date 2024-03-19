@@ -44,7 +44,7 @@ async function initMap() {
    // corsHeaders.append('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
 
     // Fetch data from Cloud Function
-    const response = await fetch('https://flawless-snow-415416.cloudfunctions.net/authFun', {
+    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun', {
       method: 'GET',
       headers: corsHeaders
     });
