@@ -121,18 +121,16 @@ google.maps.event.addListener(map, 'click', () => {
 
 async function fetchData() {
   try {
-// const csvUrl = 'https://drive.google.com/uc?export=download&id=1Evj-TsTB6w9WQEocbmIXtlQ1-uwk6OoL';
-//const response = await fetch(csvUrl);
-    const response = await fetch('https://storage.cloud.google.com/pgp-csv-bucket/FloridaHikes.csv');
-   const data = await response.text();
+    // Fetch signed URL from the backend
+    const signedUrlResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl');
+    const signedUrl = await signedUrlResponse.text();
 
-// const token = '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';  // Replace with your actual personal access token
-   // const url = `https://raw.githubusercontent.com/rdhakal01/PGP-CSV/main/FloridaHikes.csv?token=${token}`;
- // const response = await fetch(url);
-    // const data = await response.text();
+    // Fetch CSV data using the signed URL
+    const csvResponse = await fetch(signedUrl);
+    const csvData = await csvResponse.text();
 
-    // Parse CSV data (use a library or implement your own parser)
-    const parsedData = parseCSV(data);
+    // Parse CSV data
+    const parsedData = parseCSV(csvData);
 
     // Create trails array dynamically with default values for missing or invalid entries
     const trails = parsedData.map((trail) => {
@@ -160,12 +158,14 @@ async function fetchData() {
     // Filter out entries with undefined positions
     const validTrails = trails.filter((trail) => trail.position);
 
+    // Return the parsed and filtered data
     return validTrails;
   } catch (error) {
     console.error('Error fetching or parsing data:', error);
-    return [];
+    return []; // Return empty array in case of error
   }
 }
+
 
 
 function parseCSV(csv) {
