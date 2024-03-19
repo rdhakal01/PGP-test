@@ -3,6 +3,7 @@ let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
+/*
 // Function to fetch data from Google Cloud Storage
 async function fetchDataFromStorage() {
   try {
@@ -24,7 +25,7 @@ async function fetchDataFromStorage() {
     return [];
   }
 }
-
+*/
 async function initMap() {
   try {
     // Request needed libraries.
