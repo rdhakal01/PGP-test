@@ -3,9 +3,10 @@ let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
+
 async function initMap() {
-  import jwt from 'jsonwebtoken'; // Assuming you have jwt installed
   // Request needed libraries.
+  const jwt = await import('jsonwebtoken');
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
