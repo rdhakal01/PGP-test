@@ -138,7 +138,7 @@ async function parseJwtToken(token) {
 async function fetchData(signedUrl) {
   try {
     const csvResponse = await fetch(signedUrl)
-            
+  }
     });
     const csvData = await csvResponse.text();
 
