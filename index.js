@@ -4,6 +4,7 @@ let trails;
 let isMarkerClicked = false;
 
 async function initMap() {
+  import jwt from 'jsonwebtoken'; // Assuming you have jwt installed
   // Request needed libraries.
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -13,21 +14,28 @@ async function initMap() {
     center,
     mapId: "938d538613c03fe6",
 
-
   });
 
-/*
-// Insert the testMarker code here
-  const testMarker = new google.maps.Marker({
-    position: { lat: 27.9485, lng: -82.29025 },
-    map: map,
-    title: 'Test Marker',
-  });
-*/
+
 
 infoWindow = new google.maps.InfoWindow();
 
+try {
+    // 1. Fetch JWT token from backend
+    const jwtToken = await fetchJwtToken();
 
+    // 2. Parse JWT token to extract signed URL
+    const { signedUrl } = await parseJwtToken(jwtToken);
+
+    // 3. Fetch data using signed URL
+    trails = await fetchData(signedUrl);
+
+    // ... Proceed with marker creation, clustering, etc. using the fetched trails ...
+
+  } catch (error) {
+    console.error('Error fetching or parsing data:', error);
+    // Handle errors gracefully, e.g., display an error message to the user
+  }
 
 // Fetch data from CSV and create trails array
  // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
@@ -35,12 +43,6 @@ infoWindow = new google.maps.InfoWindow();
     trails = await fetchData();
   }
  
-
-// console.log('Trails Data:', trails);
-
-// console.log("Trails array:", trails);
-
-
 
 // Create an array to hold standard Google Maps markers
 const markerElements = [];
@@ -86,13 +88,7 @@ anchor: iconAnchor, // Set the anchor point
   return marker;
 });
 
-/*
-async function getFontAwesomeSvgData() {
-    const response = await fetch('https://api.fontawesome.com/v5/svg/icons/map-pin-solid.svg');
-    const svgData = await response.text();
-    return svgData;
-}
-*/
+
 
 // Enable marker clustering with MarkerClusterer
 markerCluster = new MarkerClusterer(map, markerElements, {
@@ -113,20 +109,36 @@ google.maps.event.addListener(map, 'click', () => {
         isMarkerClicked = true;
     });
 
-
-
 }
 
 
-
-async function fetchData() {
+async function fetchJwtToken() {
   try {
-    // Fetch signed URL from the backend
     const signedUrlResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl');
     const signedUrl = await signedUrlResponse.text();
 
-    // Fetch CSV data using the signed URL
-    const csvResponse = await fetch(signedUrl);
+    return signedUrl; // No access token needed with backend-managed key
+  } catch (error) {
+    console.error('Error fetching JWT token:', error);
+    return null; // Indicate error or handle appropriately
+  }
+}
+
+async function parseJwtToken(token) {
+  try {
+    const decodedToken = jwt.verify(token, TaVhvMtV5WGryTmwJNxAH9iiIB4FiMUs); // Replace with your actual secret key
+    return { signedUrl: decodedToken.signedUrl, expiration: new Date(decodedToken.expires) };
+  } catch (error) {
+    console.error('Error parsing JWT token:', error);
+    return null; // Indicate error or handle appropriately
+  }
+}
+
+async function fetchData(signedUrl) {
+  try {
+    const csvResponse = await fetch(signedUrl)
+            
+    });
     const csvData = await csvResponse.text();
 
     // Parse CSV data
@@ -192,8 +204,6 @@ function parseCSV(csv) {
 
 
 
-
-
 function toggleHighlight(marker, trail) {
     if (marker) {
         // If animation is not needed, you can remove these lines
@@ -208,9 +218,6 @@ function toggleHighlight(marker, trail) {
         console.error('Invalid marker:', marker);
     }
 }
-
-
-
 
 
 
@@ -250,51 +257,5 @@ function buildContent(trail) {
   return infoWindowContent;
 }
 
-
-
-
-
-
-
-
-
-/*
-function buildContent(trail) {
-
-console.log("Build content called:", trail);
-  const content = document.createElement("div");
-
-  content.classList.add("trail");
-  content.innerHTML = `
-    <div class="icon">
-        <i aria-hidden="true" class="fa fa-icon fa-${trail.type}" title="${trail.type}"></i>
-        <span class="fa-sr-only">${trail.type}</span>
-    </div>
-    <div class="details">
-        <div class="description">${trail.description}</div>
-        <div class="address">${trail.address}</div>
-        <div class="features">
-        <div>
-            <i aria-hidden="true" class="fa fa-ruler fa-lg ruler" title="length"></i>
-            <span class="fa-sr-only">length</span>
-            <span>${trail.length} mile</span></span>
-        </div>
-        <div>
-            <i aria-hidden="true" class="fa fa-stairs fa-lg stairs" title="difficulty"></i>
-            <span class="fa-sr-only">difficulty</span>
-            <span>${trail.difficulty}</span>
-        </div>
-        <div>
-            <i aria-hidden="true" class="fa fa-clock fa-lg clock" title="time"></i>
-            <span class="fa-sr-only">time</span>
-            <span>${trail.time} hour</sup></span>
-        </div>
-        </div>
-    </div>
-    `;
-  return content;
-}
-
-*/
 
 initMap();
