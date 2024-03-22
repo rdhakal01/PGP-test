@@ -213,8 +213,6 @@ function toggleHighlight(marker, trail) {
 
 
 
-
-
 function buildContent(trail) {
   const infoWindowContent = `
     <div class="info-window-content">
