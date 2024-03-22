@@ -18,7 +18,6 @@ async function initMap() {
   });
 
 
-
 infoWindow = new google.maps.InfoWindow();
 
 try {
