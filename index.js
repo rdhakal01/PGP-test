@@ -6,7 +6,7 @@ let isMarkerClicked = false;
 
 async function initMap() {
   // Request needed libraries.
-  const jwt = await import('jsonwebtoken');
+ // const jwt = await import('jsonwebtoken');
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
@@ -22,14 +22,12 @@ async function initMap() {
 infoWindow = new google.maps.InfoWindow();
 
 try {
-    // 1. Fetch JWT token from backend
-    const jwtToken = await fetchJwtToken();
+    // Fetch JWT token from backend
+    const jwtTokenResponse = await fetchJwtToken();
+    const jwtToken = await jwtTokenResponse.json();
 
-    // 2. Parse JWT token to extract signed URL
-    const { signedUrl } = await parseJwtToken(jwtToken);
-
-    // 3. Fetch data using signed URL
-    trails = await fetchData(signedUrl);
+    // Use the JWT token to fetch data
+    trails = await fetchData(jwtToken.signedUrl);
 
     // ... Proceed with marker creation, clustering, etc. using the fetched trails ...
 
@@ -115,29 +113,26 @@ google.maps.event.addListener(map, 'click', () => {
 
 async function fetchJwtToken() {
   try {
-    const signedUrlResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl');
-    const signedUrl = await signedUrlResponse.text();
-
-    return signedUrl; // No access token needed with backend-managed key
+    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl');
+    if (!response.ok) {
+      throw new Error('Network response was not ok.');
+    }
+    return response; // Return the response object to be processed outside
   } catch (error) {
     console.error('Error fetching JWT token:', error);
     return null; // Indicate error or handle appropriately
   }
 }
 
-async function parseJwtToken(token) {
-  try {
-    const decodedToken = jwt.verify(token, TaVhvMtV5WGryTmwJNxAH9iiIB4FiMUs); // Replace with your actual secret key
-    return { signedUrl: decodedToken.signedUrl, expiration: new Date(decodedToken.expires) };
-  } catch (error) {
-    console.error('Error parsing JWT token:', error);
-    return null; // Indicate error or handle appropriately
-  }
-}
+
 
 async function fetchData(signedUrl) {
   try {
     const csvResponse = await fetch(signedUrl);
+    // Check if the response was successful
+    if (!csvResponse.ok) {
+      throw new Error('Network response was not ok.');
+    }
     const csvData = await csvResponse.text();
 
     // Parse CSV data
@@ -150,8 +145,8 @@ async function fetchData(signedUrl) {
         description: 'Unknown',
         type: 'Unknown',
         length: 0,
-        difficulty: 0,
-        time: 0,
+        difficulty: 'Unknown', // Changed from 0 to 'Unknown' for consistency
+        time: 'Unknown', // Changed from 0 to 'Unknown' for consistency
         position: undefined, // Set position to undefined initially
       };
 
@@ -173,9 +168,11 @@ async function fetchData(signedUrl) {
     return validTrails;
   } catch (error) {
     console.error('Error fetching or parsing data:', error);
-    return []; // Return empty array in case of error
+    // Return an empty array in case of error
+    return [];
   }
 }
+
 
 
 
