@@ -196,8 +196,6 @@ function parseCSV(csv) {
 }
 
 
-
-
 function toggleHighlight(marker, trail) {
     if (marker) {
         // If animation is not needed, you can remove these lines
