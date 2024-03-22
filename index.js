@@ -87,7 +87,6 @@ anchor: iconAnchor, // Set the anchor point
 });
 
 
-
 // Enable marker clustering with MarkerClusterer
 markerCluster = new MarkerClusterer(map, markerElements, {
   gridSize: 25, // Adjust the gridSize based on your preference
