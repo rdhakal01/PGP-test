@@ -89,7 +89,7 @@ google.maps.event.addListener(map, 'click', () => {
 
 
 
-async function fetchData(signedUrl) {
+async function fetchData() {
   try {
     const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/proxyRequest');
     // Check if the response was successful
