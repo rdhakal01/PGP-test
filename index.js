@@ -19,7 +19,7 @@ async function initMap() {
 
 
 infoWindow = new google.maps.InfoWindow();
-
+/*
 try {
     // Fetch JWT token from backend
     const jwtTokenResponse = await fetchJwtToken();
@@ -40,7 +40,7 @@ try {
   if (!trails) {
     trails = await fetchData();
   }
- 
+ */
 
 // Create an array to hold standard Google Maps markers
 const markerElements = [];
@@ -108,7 +108,7 @@ google.maps.event.addListener(map, 'click', () => {
 
 }
 
-
+/*
 async function fetchJwtToken() {
   try {
     const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl');
@@ -122,11 +122,11 @@ async function fetchJwtToken() {
   }
 }
 
-
+*/
 
 async function fetchData(signedUrl) {
   try {
-    const csvResponse = await fetch(signedUrl);
+    const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/proxyRequest');
     // Check if the response was successful
     if (!csvResponse.ok) {
       throw new Error('Network response was not ok.');
