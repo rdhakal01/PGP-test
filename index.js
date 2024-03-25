@@ -6,7 +6,7 @@ let isMarkerClicked = false;
 
 async function initMap() {
   // Request needed libraries.
- // const jwt = await import('jsonwebtoken');
+ 
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
@@ -19,28 +19,7 @@ async function initMap() {
 
 
 infoWindow = new google.maps.InfoWindow();
-/*
-try {
-    // Fetch JWT token from backend
-    const jwtTokenResponse = await fetchJwtToken();
-    const jwtToken = await jwtTokenResponse.json();
 
-    // Use the JWT token to fetch data
-    trails = await fetchData(jwtToken.signedUrl);
-
-    // ... Proceed with marker creation, clustering, etc. using the fetched trails ...
-
-  } catch (error) {
-    console.error('Error fetching or parsing data:', error);
-    // Handle errors gracefully, e.g., display an error message to the user
-  }
-
-// Fetch data from CSV and create trails array
- // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
-  if (!trails) {
-    trails = await fetchData();
-  }
- */
 
 // Create an array to hold standard Google Maps markers
 const markerElements = [];
@@ -108,21 +87,7 @@ google.maps.event.addListener(map, 'click', () => {
 
 }
 
-/*
-async function fetchJwtToken() {
-  try {
-    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/generateSignedUrl');
-    if (!response.ok) {
-      throw new Error('Network response was not ok.');
-    }
-    return response; // Return the response object to be processed outside
-  } catch (error) {
-    console.error('Error fetching JWT token:', error);
-    return null; // Indicate error or handle appropriately
-  }
-}
 
-*/
 
 async function fetchData(signedUrl) {
   try {
