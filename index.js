@@ -1,141 +1,100 @@
 let markerCluster; // Declare the variable outside of the async function
 let infoWindow;
-let trails;
 let isMarkerClicked = false;
 
-
 async function initMap() {
-  // Request needed libraries.
- 
-  const { Map } = await google.maps.importLibrary("maps");
-  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-  const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
-  const map = new Map(document.getElementById("map"), {
-    zoom: 7,
-    center,
-    mapId: "938d538613c03fe6",
+  try {
+    const trails = await fetchData(); // Wait for data to be fetched
 
-  });
+    // Create map and initialize markers
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 7,
+      center: { lat: 28.216984195129687, lng: -81.48471842669254 }
+    });
 
+    infoWindow = new google.maps.InfoWindow();
 
-infoWindow = new google.maps.InfoWindow();
+    const markerElements = trails.map((trail) => {
+      const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
+      const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1);
+      const marker = new google.maps.Marker({
+        position: trail.position,
+        map: map,
+        title: trail.description,
+        icon: {
+          url: 'https://i.imgur.com/w7drtat.png',
+          scaledSize: iconSize,
+          anchor: iconAnchor,
+        },
+        optimized: true,
+        zIndex: 1,
+      });
 
+      google.maps.event.addListener(marker, "click", () => {
+        if (!isMarkerClicked) {
+          toggleHighlight(marker, trail);
+          infoWindow.setContent(buildContent(trail));
+          infoWindow.open(map, marker);
+        }
+      });
 
-// Create an array to hold standard Google Maps markers
-const markerElements = [];
-const markers = trails.map((trail) => {
-  const iconSize = new google.maps.Size(35, 50); // Adjust the size based on your preference
-const iconAnchor = new google.maps.Point(iconSize.width / 2, iconSize.height / 1);
-// const svgData = await getFontAwesomeSvgData();
-  const marker = new google.maps.Marker({
-    position: trail.position,
-    map: map,
-    title: trail.description,
-    icon: {
+      return marker;
+    });
 
+    markerCluster = new MarkerClusterer(map, markerElements, {
+      gridSize: 25,
+      imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+      minimumClusterSize: 2,
+      zoomOnClick: true,
+    });
 
-// url: `data:image/svg+xml;base64,${btoa(svgData)}`,
-           // scaledSize: new google.maps.Size(30, 30),
-  url: 'https://i.imgur.com/w7drtat.png',
-       // url: 'paws.png',
-      scaledSize: iconSize,
-
-// labelContent: '<i class="fa fa-map-pin fa-3x" style="color:rgba(153,102,102,0.8);"></i>',
-       // labelAnchor: new google.maps.Point(iconSize.width / 2, iconSize.height),
-       // labelClass: "custom-marker-label", // Add a custom CSS class for styling if needed
-
-
-anchor: iconAnchor, // Set the anchor point
-    },
-    optimized: true, // Disable marker optimization
-    zIndex: 1, // Ensure markers are above other elements
-
-  });
-
- google.maps.event.addListener(marker, "click", () => {
-            if (!isMarkerClicked) {
-                toggleHighlight(marker, trail);
-                infoWindow.setContent(buildContent(trail));
-                infoWindow.open(map, marker);
-            }
-        });
-
-  markerElements.push(marker);
-
-  return marker;
-});
-
-
-// Enable marker clustering with MarkerClusterer
-markerCluster = new MarkerClusterer(map, markerElements, {
-  gridSize: 25, // Adjust the gridSize based on your preference
-  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-  minimumClusterSize: 2, // Set the minimum number of markers to form a cluster
-zoomOnClick: true,
-
-});
-
-
-google.maps.event.addListener(map, 'click', () => {
-        isMarkerClicked = false;
-        infoWindow.close();
+    google.maps.event.addListener(map, 'click', () => {
+      isMarkerClicked = false;
+      infoWindow.close();
     });
 
     google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
-        isMarkerClicked = true;
+      isMarkerClicked = true;
     });
-
+  } catch (error) {
+    console.error('Error fetching or parsing data:', error);
+    // Handle errors gracefully (e.g., display an error message)
+  }
 }
-
-
 
 async function fetchData() {
   try {
     const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/proxyRequest');
-    // Check if the response was successful
     if (!csvResponse.ok) {
       throw new Error('Network response was not ok.');
     }
     const csvData = await csvResponse.text();
-
-    // Parse CSV data
     const parsedData = parseCSV(csvData);
-
-    // Create trails array dynamically with default values for missing or invalid entries
     const trails = parsedData.map((trail) => {
       const defaultTrail = {
         address: '',
         description: 'Unknown',
         type: 'Unknown',
         length: 0,
-        difficulty: 'Unknown', // Changed from 0 to 'Unknown' for consistency
-        time: 'Unknown', // Changed from 0 to 'Unknown' for consistency
-        position: undefined, // Set position to undefined initially
+        difficulty: 'Unknown',
+        time: 'Unknown',
+        position: undefined,
       };
-
-      // Check if lat and lng exist and are valid
       if (trail.lat && trail.lng) {
         defaultTrail.position = {
           lat: parseFloat(trail.lat),
           lng: parseFloat(trail.lng),
         };
       }
-
       return { ...defaultTrail, ...trail };
     });
-
-    // Filter out entries with undefined positions
     const validTrails = trails.filter((trail) => trail.position);
-
-    // Return the parsed and filtered data
     return validTrails;
   } catch (error) {
-    console.error('Error fetching or parsing data:', error);
-    // Return an empty array in case of error
+    console.error('Error fetching data:', error);
     return [];
   }
 }
-
 
 
 
