@@ -122,9 +122,11 @@ async function fetchData() {
   try {
     const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun');
     // Check if the response was successful
+  /*
     if (!csvResponse.ok) {
       throw new Error('Network response was not ok.');
     }
+    */
     const csvData = await csvResponse.text();
 
     // Parse CSV data
