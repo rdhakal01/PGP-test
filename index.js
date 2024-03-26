@@ -115,7 +115,7 @@ google.maps.event.addListener(map, 'click', () => {
 
 }
 
-
+/*
 async function fetchData() {
   try {
     const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun');
@@ -137,11 +137,10 @@ async function fetchData() {
   }
 }
 
+*/
 
 
 
-
-/*
 async function fetchData() {
   try {
     const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun');
@@ -198,10 +197,10 @@ async function fetchData() {
     return [];
   }
 }
-*/
 
 
-/*
+
+
 function parseCSV(csv) {
   // Implement your CSV parsing logic here
   // This is a simple example, adjust based on your CSV structure
@@ -222,7 +221,7 @@ function parseCSV(csv) {
     return obj;
   });
 }
-*/
+
 
 function toggleHighlight(marker, trail) {
     if (marker) {
