@@ -3,10 +3,8 @@ let infoWindow;
 let trails;
 let isMarkerClicked = false;
 
-
 async function initMap() {
   // Request needed libraries.
- 
   const { Map } = await google.maps.importLibrary("maps");
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const center = { lat: 28.216984195129687, lng: -81.48471842669254 };
@@ -15,13 +13,35 @@ async function initMap() {
     center,
     mapId: "938d538613c03fe6",
 
+
   });
 
+/*
+// Insert the testMarker code here
+  const testMarker = new google.maps.Marker({
+    position: { lat: 27.9485, lng: -82.29025 },
+    map: map,
+    title: 'Test Marker',
+  });
+*/
 
 infoWindow = new google.maps.InfoWindow();
 
-try {
-  trails = await fetchData(); // Wait for data to be fetched
+
+
+// Fetch data from CSV and create trails array
+ // Ensure that the global 'trails' variable is already populated by calling 'fetchData'
+  if (!trails) {
+    trails = await fetchData();
+  }
+ 
+
+// console.log('Trails Data:', trails);
+
+// console.log("Trails array:", trails);
+
+
+
 // Create an array to hold standard Google Maps markers
 const markerElements = [];
 const markers = trails.map((trail) => {
@@ -66,6 +86,13 @@ anchor: iconAnchor, // Set the anchor point
   return marker;
 });
 
+/*
+async function getFontAwesomeSvgData() {
+    const response = await fetch('https://api.fontawesome.com/v5/svg/icons/map-pin-solid.svg');
+    const svgData = await response.text();
+    return svgData;
+}
+*/
 
 // Enable marker clustering with MarkerClusterer
 markerCluster = new MarkerClusterer(map, markerElements, {
@@ -85,10 +112,8 @@ google.maps.event.addListener(map, 'click', () => {
     google.maps.event.addListener(markerCluster, 'clusterclick', (event) => {
         isMarkerClicked = true;
     });
-} catch (error) {
-    console.error('Error fetching or parsing data:', error);
-    // Implement error handling (e.g., display a user-friendly message)
-  }
+
+
 
 }
 
