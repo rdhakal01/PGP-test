@@ -113,11 +113,35 @@ google.maps.event.addListener(map, 'click', () => {
         isMarkerClicked = true;
     });
 
-
-
 }
 
 
+async function fetchData() {
+  try {
+    const response = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun');
+
+    // Check if the response was successful
+    if (!response.ok) {
+      throw new Error('Network response was not ok.');
+    }
+
+    const trailsData = await response.json(); // Directly parse as JSON
+
+    // Filter out trails with missing positions
+    const validTrails = trailsData.filter((trail) => trail.position);
+
+    return validTrails;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return []; // Return an empty array in case of error
+  }
+}
+
+
+
+
+
+/*
 async function fetchData() {
   try {
     const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun');
@@ -131,17 +155,17 @@ async function fetchData() {
 
 
 
-  /*  
+    
     // Parse CSV data
     const parsedData = parseCSV(csvData);
-*/
+
 
 
     
 
     // Create trails array dynamically with default values for missing or invalid entries
-   // const trails = parsedData.map((trail) => {
-    const trails = csvData.map((trail) => {
+   const trails = parsedData.map((trail) => {
+   
       const defaultTrail = {
         address: '',
         description: 'Unknown',
@@ -174,10 +198,10 @@ async function fetchData() {
     return [];
   }
 }
+*/
 
 
-
-
+/*
 function parseCSV(csv) {
   // Implement your CSV parsing logic here
   // This is a simple example, adjust based on your CSV structure
@@ -198,7 +222,7 @@ function parseCSV(csv) {
     return obj;
   });
 }
-
+*/
 
 function toggleHighlight(marker, trail) {
     if (marker) {
