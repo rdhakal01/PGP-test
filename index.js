@@ -97,7 +97,7 @@ async function getFontAwesomeSvgData() {
 // Enable marker clustering with MarkerClusterer
 markerCluster = new MarkerClusterer(map, markerElements, {
   gridSize: 25, // Adjust the gridSize based on your preference
-  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+ // imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
   minimumClusterSize: 2, // Set the minimum number of markers to form a cluster
 zoomOnClick: true,
 
