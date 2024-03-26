@@ -142,9 +142,15 @@ async function fetchData() {
 
 
 async function fetchData() {
-  try {
-    const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun');
-    // Check if the response was successful
+ try {
+    const apiKey = process.env.REACT_APP_API_KEY; // Access API key from environment
+
+    const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun', {
+      headers: {
+        'Content-Type': 'application/json', // May not be necessary for GET requests, double-check API requirements
+        'x-api-key': apiKey
+      }
+    });
   
     if (!csvResponse.ok) {
       throw new Error('Network response was not ok.');
