@@ -1,21 +1,32 @@
 const path = require('path');
-const Dotenv = require('dotenv');
+const Dotenv = require('dotenv-webpack');
 
-// Securely load environment variables with path adjustments
-const dotenv = new Dotenv({
-  path: path.resolve(__dirname, '../../../PGP-CSV/.env'),  // Adjust path to .env file
-  safe: true
-});
-dotenv.config();
+// This function will attempt to load environment variables from the .env file
+// located in the PGP-CSV repository. If successful, it returns a Dotenv plugin
+// configured to use those environment variables. Otherwise, it returns null.
+function loadDotenvPlugin() {
+  try {
+    // Attempt to require dotenv and load the .env file
+    const dotenvPath = path.resolve(__dirname, '../../PGP-CSV/.env');
+    require('dotenv').config({ path: dotenvPath });
+
+    // If dotenv loaded successfully, return the Dotenv plugin
+    return new Dotenv({ path: dotenvPath });
+  } catch (error) {
+    // If dotenv failed to load (e.g., .env file not found), return null
+    console.error('Failed to load environment variables from .env file:', error);
+    return null;
+  }
+}
 
 module.exports = {
-  // ... other Webpack configurations
+  // Other webpack configurations...
 
   plugins: [
-    new Dotenv({
-      path: path.resolve(__dirname, '../../../PGP-CSV/.env'), // Use same path here for clarity
-      safe: true  // Prevent potential errors from undefined variables
-    })
+    // Attempt to load environment variables from .env file
+    loadDotenvPlugin(),
+
+    // Other plugins...
   ],
 
   // Output path (adjust if needed)
@@ -24,4 +35,3 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   }
 };
-
