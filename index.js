@@ -143,7 +143,7 @@ async function fetchData() {
 
 async function fetchData() {
  try {
-    const apiKey = process.env.REACT_APP_API_KEY; // Access API key from environment
+    const apiKey = REACT_APP_API_KEY; // Access API key from environment
 
 // Check if API key is defined
     if (!apiKey) {
