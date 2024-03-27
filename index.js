@@ -145,6 +145,11 @@ async function fetchData() {
  try {
     const apiKey = process.env.REACT_APP_API_KEY; // Access API key from environment
 
+// Check if API key is defined
+    if (!apiKey) {
+      throw new Error('API key is missing or invalid.');
+    }
+   
     const csvResponse = await fetch('https://us-central1-flawless-snow-415416.cloudfunctions.net/authFun', {
       headers: {
         'Content-Type': 'application/json', // May not be necessary for GET requests, double-check API requirements
